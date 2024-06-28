@@ -48,4 +48,40 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.put("/:id", async (req, res) => {
+  try {
+      const { name, email, role } = req.body;
+      let updateFields = { name, email, role };
+
+      // If password is provided, hash it before updating
+      if (req.body.password) {
+          const hash = await bcrypt.hash(req.body.password, 10);
+          updateFields.password = hash;
+      }
+
+      const user = await User.findByIdAndUpdate(req.params.id, updateFields, { new: true });
+      if (!user) {
+          return res.status(404).send({ msg: "User not found" });
+      }
+      return res.status(200).send({ msg: "Success", user });
+  } catch (err) {
+      return res.status(401).send({ err });
+  }
+});
+
+// Delete user
+router.delete("/:id", async (req, res) => {
+  try {
+      const user = await User.findByIdAndDelete(req.params.id);
+      if (!user) {
+          return res.status(404).send({ msg: "User not found" });
+      }
+      return res.status(200).send({ msg: "User deleted", user });
+  } catch (err) {
+      return res.status(401).send({ err });
+  }
+});
+
+
+
 export default router;
